@@ -52,17 +52,10 @@ namespace provider_imu
     }
     bool ProviderIMU::confirmCheckSum(std::string &data)
     {
-        try
-        {
-            std::string checksumData = data.substr(0, data.find("*", 0));
-            uint8_t calculatedChecksum = calculeCheckSum(checksumData);
-            uint8_t originalChecksum = std::stoi(data.substr(data.find("*", 0)+1, 2), nullptr, 16);
-            return originalChecksum == calculatedChecksum;
-        }
-        catch (...)
-        {
-            return false;
-        }
+        std::string checksumData = data.substr(0, data.find("*", 0));
+        uint8_t calculatedChecksum = calculeCheckSum(checksumData);
+        uint8_t originalChecksum = std::stoi(data.substr(data.find("*", 0)+1, 2), nullptr, 16);
+        return originalChecksum == calculatedChecksum;
     }
 
     bool ProviderIMU::tare()
@@ -226,8 +219,9 @@ namespace provider_imu
         while (!_reader_stop_thread)
         {
             do
-            {
-                _rs485Connection.ReadOnce((uint8_t*)buffer,0);
+            {   
+                _rs485Connection.ReadPackets(1,(uint8_t*)buffer);
+                std::cout<<buffer[0]<<std::endl;
             } while (buffer[0] != '$');
             int i;
             for (i = 1; buffer[i - 1] != '\n' && i < BUFFER_SIZE; i++)
@@ -241,6 +235,7 @@ namespace provider_imu
             }
 
             buffer[i] = 0;
+            std::cout<<buffer[3]<<std::endl;
 
             if (!strncmp(&buffer[3], REG_15, 3))
             {
