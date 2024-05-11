@@ -17,6 +17,7 @@ find_package(std_srvs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package ( Boost COMPONENTS log REQUIRED )
 include_directories(include)
 
 file(GLOB SOURCES src/*.cpp)
@@ -32,7 +33,7 @@ install(TARGETS
 ${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME})
 
-ament_target_dependencies(${PROJECT_NAME} rclcpp sonia_common_cpp sonia_common_ros2 sensor_msgs std_msgs std_srvs geometry_msgs)
+ament_target_dependencies(${PROJECT_NAME} rclcpp Boost sonia_common_cpp sonia_common_ros2 sensor_msgs std_msgs std_srvs geometry_msgs)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

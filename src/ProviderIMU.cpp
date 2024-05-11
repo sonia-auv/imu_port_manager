@@ -1,5 +1,7 @@
 #include <sstream>
+#include "boost/log/trivial.hpp"
 #include "imu_port_manager/ProviderIMU.h"
+using namespace std::chrono_literals;
 
 namespace provider_imu
 {
@@ -43,6 +45,7 @@ namespace provider_imu
         
         return check;
     }
+    
     void ProviderIMU::appendCheckSum(std::string &data)
     {
         std::stringstream ss;
@@ -50,29 +53,41 @@ namespace provider_imu
         ss << data << std::string("*") << std::hex << checksum;
         data = ss.str();
     }
+
     bool ProviderIMU::confirmCheckSum(std::string &data)
     {
-        std::string checksumData = data.substr(0, data.find("*", 0));
-        uint8_t calculatedChecksum = calculeCheckSum(checksumData);
-        uint8_t originalChecksum = std::stoi(data.substr(data.find("*", 0)+1, 2), nullptr, 16);
-        return originalChecksum == calculatedChecksum;
+        try
+        {
+            std::string checksumData = data.substr(0, data.find("*", 0));
+            uint8_t calculatedChecksum = calculeCheckSum(checksumData);
+            uint8_t originalChecksum = std::stoi(data.substr(data.find("*", 0)+1, 2), nullptr, 16);
+            return originalChecksum == calculatedChecksum;
+        }
+        catch(...)
+        {
+            BOOST_LOG_TRIVIAL(info)<<"IMU : Bad packet checksum";
+            return false;
+        }
     }
 
     bool ProviderIMU::tare()
     {
         _rs485Connection.Transmit("$VNTAR*5F\n");
+        std::this_thread::sleep_for(0.1s);
         return true;
     }
 
     bool ProviderIMU::reset()
     {
         _rs485Connection.Transmit("$VNRST*4D\n");
+        std::this_thread::sleep_for(0.1s);
         return true;
     }
 
     bool ProviderIMU::factory_reset()
     {
         _rs485Connection.Transmit("$VNRFS*5F\n");
+        std::this_thread::sleep_for(0.1s);
         return true;
     }
 
@@ -86,6 +101,8 @@ namespace provider_imu
         appendCheckSum(send_data);
 
         _rs485Connection.Transmit(send_data);
+        std::this_thread::sleep_for(0.1s);
+
         _writerMutex.unlock();
         return true;
     }
@@ -100,6 +117,8 @@ namespace provider_imu
         appendCheckSum(send_data);
 
         _rs485Connection.Transmit(send_data);
+        std::this_thread::sleep_for(0.1s);
+
         _writerMutex.unlock();
         return true;
     }
@@ -114,6 +133,8 @@ namespace provider_imu
         appendCheckSum(send_data);
 
         _rs485Connection.Transmit(send_data);
+        std::this_thread::sleep_for(0.1s);
+
         _writerMutex.unlock();
         return true;
     }
@@ -128,9 +149,12 @@ namespace provider_imu
         appendCheckSum(send_data);
 
         _rs485Connection.Transmit(send_data);
+        std::this_thread::sleep_for(0.1s);
+
         _writerMutex.unlock();
         return true;
     }
+
     void ProviderIMU::dvl_velocity(const geometry_msgs::msg::Twist::SharedPtr &msg)
     {
         std::stringstream ss;
@@ -148,11 +172,14 @@ namespace provider_imu
         std::stringstream ss;
 
         _writerMutex.lock();
+
         ss << "$VNWNV,07," << std::to_string(msg->data);
         std::string send_data = ss.str();
         appendCheckSum(send_data);
 
         _rs485Connection.Transmit(send_data);
+        std::this_thread::sleep_for(0.5s);
+
         _writerMutex.unlock();
     }
 
@@ -161,12 +188,15 @@ namespace provider_imu
         std::stringstream ss;
 
         _writerMutex.lock();
+
         ss << "$VNWNV,35," << std::to_string(msg->data.at(0)) << "," << std::to_string(msg->data.at(1))
            << "," << std::to_string(msg->data.at(2)) << "," << std::to_string(msg->data.at(3));
         std::string send_data = ss.str();
         appendCheckSum(send_data);
 
         _rs485Connection.Transmit(send_data);
+        std::this_thread::sleep_for(0.5s);
+
         _writerMutex.unlock();
     }
 
@@ -175,12 +205,15 @@ namespace provider_imu
         std::stringstream ss;
 
         _writerMutex.lock();
+
         ss << "$VNWNV,35," << std::to_string(msg->data.at(0)) << "," << std::to_string(msg->data.at(1))
            << "," << std::to_string(msg->data.at(2)) << "," << std::to_string(msg->data.at(3));
         std::string send_data = ss.str();
         appendCheckSum(send_data);
 
         _rs485Connection.Transmit(send_data);
+        std::this_thread::sleep_for(0.5s);
+
         _writerMutex.unlock();
     }
 
@@ -189,19 +222,24 @@ namespace provider_imu
         std::stringstream ss;
 
         _writerMutex.lock();
+        
         ss << "$VNWNV,82," << std::to_string(msg->data.at(0)) << "," << std::to_string(msg->data.at(1))
            << "," << std::to_string(msg->data.at(2)) << "," << std::to_string(msg->data.at(3));
         std::string send_data = ss.str();
         appendCheckSum(send_data);
 
         _rs485Connection.Transmit(send_data);
+        std::this_thread::sleep_for(0.5s);
+
         _writerMutex.unlock();
     }
+
     void ProviderIMU::imu_filtering_configuration_callback(const std_msgs::msg::UInt8MultiArray::SharedPtr &msg)
     {
         std::stringstream ss;
 
         _writerMutex.lock();
+
         ss << "$VNWNV,85," << std::to_string(msg->data.at(0)) << "," << std::to_string(msg->data.at(1)) << "," << std::to_string(msg->data.at(2))
            << "," << std::to_string(msg->data.at(4)) << "," << std::to_string(msg->data.at(5)) << "," << std::to_string(msg->data.at(6))
            << "," << std::to_string(msg->data.at(7)) << "," << std::to_string(msg->data.at(8)) << "," << std::to_string(msg->data.at(9));
@@ -209,6 +247,8 @@ namespace provider_imu
         appendCheckSum(send_data);
 
         _rs485Connection.Transmit(send_data);
+        std::this_thread::sleep_for(0.5s);
+
         _writerMutex.unlock();
     }
 
@@ -220,10 +260,11 @@ namespace provider_imu
         {
             do
             {   
-                _rs485Connection.ReadPackets(1,(uint8_t*)buffer);
-                std::cout<<buffer[0]<<std::endl;
+                _rs485Connection.ReadOnce((uint8_t*)buffer,0);
             } while (buffer[0] != '$');
+
             int i;
+
             for (i = 1; buffer[i - 1] != '\n' && i < BUFFER_SIZE; i++)
             {
                 _rs485Connection.ReadOnce((uint8_t *)buffer, i);
@@ -235,7 +276,6 @@ namespace provider_imu
             }
 
             buffer[i] = 0;
-            std::cout<<buffer[3]<<std::endl;
 
             if (!strncmp(&buffer[3], REG_15, 3))
             {
@@ -261,6 +301,10 @@ namespace provider_imu
                 _err.str = std::string(buffer);
                 _err.cond.notify_one();
             }
+            else
+            {
+                BOOST_LOG_TRIVIAL(info)<<buffer;
+            }
 
         } // end while
     }     // end reader
@@ -274,28 +318,44 @@ namespace provider_imu
 
             std::unique_lock<std::mutex> mlock(_err.mutex);
             _err.cond.wait(mlock);
-            if ((!_err.str.empty()) && confirmCheckSum(_err.str))
+
+            try
             {
-                std::stringstream ss(_err.str);
+                if ((!_err.str.empty()) && confirmCheckSum(_err.str))
+                {
+                    std::stringstream ss(_err.str);
 
-                std::getline(ss, parameter, ',');
+                    std::getline(ss, parameter, ',');
 
-                std::getline(ss, parameter, ',');
+                    std::getline(ss, parameter, ',');
+
+                    BOOST_LOG_TRIVIAL(info)<<"Error : "<<parameter.c_str();
+                }
             }
+            catch(...)
+            {
+                BOOST_LOG_TRIVIAL(info)<<"IMU : Bad packet error";
+            }
+            
+            
         }
     }
-    /*void ProviderIMU::send_register(Register& reg)
+    
+    void ProviderIMU::send_register_15()
     {
-        while(!reg.stop_thread)
+        while (!_reg_15.stop_thread)
         {
             sensor_msgs::msg::Imu msg;
-            std::string parameter ="";
+            std::string parameter = "";
 
-            std::unique_lock<std::mutex> mlock(reg.mutex);
-            reg.cond.wait(mlock);
-            if((!reg.str.empty()) && confirmCheckSum(reg.str))
+            std::unique_lock<std::mutex> mlock(_reg_15.mutex);
+            _reg_15.cond.wait(mlock);
+
+            try
+            {
+                if ((!_reg_15.str.empty()) && confirmCheckSum(_reg_15.str))
                 {
-                    std::stringstream ss(reg.str);
+                    std::stringstream ss(_reg_15.str);
 
                     std::getline(ss, parameter, ',');
 
@@ -327,57 +387,14 @@ namespace provider_imu
                     msg.angular_velocity.z = std::stof(parameter);
                     publisher->publish(msg);
                 }
-        }
-
-    }*/
-    void ProviderIMU::send_register_15()
-    {
-        while (!_reg_15.stop_thread)
-        {
-            sensor_msgs::msg::Imu msg;
-            std::string parameter = "";
-
-            std::cout<<"Hello"<<std::endl;
-
-            std::unique_lock<std::mutex> mlock(_reg_15.mutex);
-            _reg_15.cond.wait(mlock);
-            std::cout<<"Hello2"<<std::endl;
-            if ((!_reg_15.str.empty()) && confirmCheckSum(_reg_15.str))
-            {
-                std::stringstream ss(_reg_15.str);
-
-                std::getline(ss, parameter, ',');
-
-                std::getline(ss, parameter, ',');
-                msg.orientation.x = std::stof(parameter);
-
-                std::getline(ss, parameter, ',');
-                msg.orientation.y = std::stof(parameter);
-
-                std::getline(ss, parameter, ',');
-                msg.orientation.z = std::stof(parameter);
-
-                std::getline(ss, parameter, ',');
-                msg.linear_acceleration.x = std::stof(parameter);
-
-                std::getline(ss, parameter, ',');
-                msg.linear_acceleration.y = std::stof(parameter);
-
-                std::getline(ss, parameter, ',');
-                msg.linear_acceleration.z = std::stof(parameter);
-
-                std::getline(ss, parameter, ',');
-                msg.angular_velocity.x = std::stof(parameter);
-
-                std::getline(ss, parameter, ',');
-                msg.angular_velocity.y = std::stof(parameter);
-
-                std::getline(ss, parameter, '*');
-                msg.angular_velocity.z = std::stof(parameter);
-                publisher->publish(msg);
             }
+            catch(...)
+            {
+                BOOST_LOG_TRIVIAL(info)<<"IMU : Bad packet register 15";
+            }   
         }
     }
+
     void ProviderIMU::send_register_239()
     {
         while (!_reg_239.stop_thread)
@@ -387,42 +404,51 @@ namespace provider_imu
 
             std::unique_lock<std::mutex> mlock(_reg_239.mutex);
             _reg_239.cond.wait(mlock);
-            if ((!_reg_239.str.empty()) && confirmCheckSum(_reg_239.str))
+
+            try
             {
-                std::stringstream ss(_reg_239.str);
+                if ((!_reg_239.str.empty()) && confirmCheckSum(_reg_239.str))
+                {
+                    std::stringstream ss(_reg_239.str);
 
-                std::getline(ss, parameter, ',');
+                    std::getline(ss, parameter, ',');
 
-                std::getline(ss, parameter, ',');
-                msg.orientation.x = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.orientation.x = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.orientation.y = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.orientation.y = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.orientation.z = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.orientation.z = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.linear_acceleration.x = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.linear_acceleration.x = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.linear_acceleration.y = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.linear_acceleration.y = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.linear_acceleration.z = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.linear_acceleration.z = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.angular_velocity.x = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.angular_velocity.x = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.angular_velocity.y = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.angular_velocity.y = std::stof(parameter);
 
-                std::getline(ss, parameter, '*');
-                msg.angular_velocity.z = std::stof(parameter);
-                publisher->publish(msg);
+                    std::getline(ss, parameter, '*');
+                    msg.angular_velocity.z = std::stof(parameter);
+                    publisher->publish(msg);
+                }
+            }
+            catch(...)
+            {
+                BOOST_LOG_TRIVIAL(info)<<"IMU : Bad packet register 239";
             }
         }
     }
+
     void ProviderIMU::send_register_240()
     {
         while (!_reg_240.stop_thread)
@@ -432,39 +458,47 @@ namespace provider_imu
 
             std::unique_lock<std::mutex> mlock(_reg_240.mutex);
             _reg_240.cond.wait(mlock);
-            if ((!_reg_240.str.empty()) && confirmCheckSum(_reg_240.str))
+
+            try
             {
-                std::stringstream ss(_reg_15.str);
+                if ((!_reg_240.str.empty()) && confirmCheckSum(_reg_240.str))
+                {
+                    std::stringstream ss(_reg_15.str);
 
-                std::getline(ss, parameter, ',');
+                    std::getline(ss, parameter, ',');
 
-                std::getline(ss, parameter, ',');
-                msg.orientation.x = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.orientation.x = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.orientation.y = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.orientation.y = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.orientation.z = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.orientation.z = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.linear_acceleration.x = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.linear_acceleration.x = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.linear_acceleration.y = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.linear_acceleration.y = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.linear_acceleration.z = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.linear_acceleration.z = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.angular_velocity.x = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.angular_velocity.x = std::stof(parameter);
 
-                std::getline(ss, parameter, ',');
-                msg.angular_velocity.y = std::stof(parameter);
+                    std::getline(ss, parameter, ',');
+                    msg.angular_velocity.y = std::stof(parameter);
 
-                std::getline(ss, parameter, '*');
-                msg.angular_velocity.z = std::stof(parameter);
-                publisher->publish(msg);
+                    std::getline(ss, parameter, '*');
+                    msg.angular_velocity.z = std::stof(parameter);
+                    publisher->publish(msg);
+                }
+            }
+            catch(...)
+            {
+                BOOST_LOG_TRIVIAL(info)<<"IMU : Bad packet register 240";
             }
         }
     }

@@ -8,7 +8,6 @@ int main(int argc, char *argv[])
     rclcpp::init(argc, argv);
     auto imu= std::make_shared<provider_imu::ProviderIMU>();
     
-    //auto interface = std::make_shared<sonia_hw_interface::RS485Interface>();
     if (!imu->OpenPort())
     {   
         std::cout << "Could not open port..." << std::endl;

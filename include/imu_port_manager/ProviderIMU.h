@@ -63,7 +63,6 @@ namespace provider_imu
             void imu_filtering_configuration_callback(const std_msgs::msg::UInt8MultiArray::SharedPtr& msg);
 
             void reader();
-            //void send_register(Register& reg);
             void send_register_15();
             void send_register_239();
             void send_register_240();
