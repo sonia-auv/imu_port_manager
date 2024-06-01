@@ -4,7 +4,7 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <std_msgs/msg/u_int8.hpp>
 #include <std_msgs/msg/u_int8_multi_array.hpp>
-#include <std_srvs/srv/empty.hpp>
+#include <std_srvs/srv/trigger.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 #include <sonia_common_cpp/SerialConn.h>
 
@@ -47,20 +47,20 @@ namespace provider_imu
             bool confirmCheckSum(std::string& data);
             
 
-            bool tare();
-            bool reset();
-            bool factory_reset();
-            bool magnetic_disturbance(std_srvs::srv::SetBool::Request &rsq);
-            bool acceleration_disturbance(std_srvs::srv::SetBool::Request &rsq);
-            bool velocity_compensation(std_srvs::srv::SetBool::Request &rsq);
-            bool asyn_output_pause(std_srvs::srv::SetBool::Request &rsq);
+            void tare(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response);
+            void reset(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response);
+            void factory_reset(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response);
+            void magnetic_disturbance(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+            void acceleration_disturbance(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+            void velocity_compensation(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+            void asyn_output_pause(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
-            void dvl_velocity(const geometry_msgs::msg::Twist::SharedPtr& msg);
-            void asyn_Data_frequency_callback(const std_msgs::msg::UInt8::SharedPtr& msg);
-            void vpe_basic_control_callback(const std_msgs::msg::UInt8MultiArray::SharedPtr& msg);
-            void magnetometer_calibration_control_callback(const std_msgs::msg::UInt8MultiArray::SharedPtr& msg);
-            void delta_theta_delta_velocity_callback(const std_msgs::msg::UInt8MultiArray::SharedPtr& msg);
-            void imu_filtering_configuration_callback(const std_msgs::msg::UInt8MultiArray::SharedPtr& msg);
+            void dvl_velocity(const std::shared_ptr<geometry_msgs::msg::Twist>  msg);
+            //void asyn_Data_frequency_callback(const std_msgs::msg::UInt8::SharedPtr& msg);
+            void vpe_basic_control_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg);
+            void magnetometer_calibration_control_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg);
+            void delta_theta_delta_velocity_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg);
+            void imu_filtering_configuration_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg);
 
             void reader();
             void send_register_15();
@@ -77,5 +77,19 @@ namespace provider_imu
             sonia_common_cpp::SerialConn _rs485Connection;
 
             rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr publisher;
+
+            rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr dvl_subscriber;
+            rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr vpe_basic_control;
+            rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr magnetometer_calibration_control;
+            rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr delta_theta_delta_velocity;
+            rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr imu_filtering_configuration;
+
+            rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr tare_srv;
+            rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reset_srv;
+            rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr factory_reset_srv;
+            rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr magnetic_disturbance_srv;
+            rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr acceleration_disturbance_srv;
+            rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr velocity_compensation_srv;
+            rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr asyn_output_pause_srv;
     };
 }
