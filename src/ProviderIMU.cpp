@@ -1,6 +1,6 @@
 #include <sstream>
 #include "boost/log/trivial.hpp"
-#include "imu_port_manager/ProviderIMU.h"
+#include "imu_port_manager/ProviderIMU.hpp"
 
 using std::placeholders::_1;
 using std::placeholders::_2;

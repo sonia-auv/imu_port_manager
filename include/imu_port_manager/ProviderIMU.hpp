@@ -6,13 +6,13 @@
 #include <std_msgs/msg/u_int8_multi_array.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <std_srvs/srv/set_bool.hpp>
-#include <sonia_common_cpp/SerialConn.h>
+#include <sonia_common_cpp/SerialConn.hpp>
 
 #include <stdio.h>
 #include <string>
 #include <thread>
 #include "rclcpp/rclcpp.hpp"
-#include "SharedQueue.h"
+#include "SharedQueue.hpp"
 
 namespace provider_imu
 {
