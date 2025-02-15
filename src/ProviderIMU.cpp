@@ -274,6 +274,8 @@ namespace provider_imu
 
     void ProviderIMU::reader()
     {
+	// Delay for port opening
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
         char buffer[BUFFER_SIZE];
 
         while (!_reader_stop_thread)
