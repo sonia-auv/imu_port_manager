@@ -391,6 +391,9 @@ namespace provider_imu
                     msg.orientation.z = std::stof(parameter);
 
                     std::getline(ss, parameter, ',');
+                    msg.orientation.w = std::stof(parameter);
+
+                    std::getline(ss, parameter, ',');
                     msg.linear_acceleration.x = std::stof(parameter);
 
                     std::getline(ss, parameter, ',');
