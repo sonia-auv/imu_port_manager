@@ -95,6 +95,7 @@ namespace provider_imu
         _rs485Connection.Transmit("$VNTAR*5F\n");
         std::this_thread::sleep_for(0.1s);
         response->success = true;
+        response->message = "IMU Sensor tared";
     }
 
     void ProviderIMU::reset(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response)
@@ -102,6 +103,7 @@ namespace provider_imu
         _rs485Connection.Transmit("$VNRST*4D\n");
         std::this_thread::sleep_for(0.1s);
         response->success = true;
+        response->message = "IMU Sensor reset";
     }
 
     void ProviderIMU::factory_reset(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response)
@@ -109,6 +111,7 @@ namespace provider_imu
         _rs485Connection.Transmit("$VNRFS*5F\n");
         std::this_thread::sleep_for(0.1s);
         response->success = true;
+        response->message = "IMU Sensor factory_reset"
     }
 
     void ProviderIMU::magnetic_disturbance(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response)
