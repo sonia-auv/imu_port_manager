@@ -111,7 +111,7 @@ namespace provider_imu
         _rs485Connection.Transmit("$VNRFS*5F\n");
         std::this_thread::sleep_for(0.1s);
         response->success = true;
-        response->message = "IMU Sensor factory_reset"
+        response->message = "IMU Sensor factory_reset";
     }
 
     void ProviderIMU::magnetic_disturbance(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response)
