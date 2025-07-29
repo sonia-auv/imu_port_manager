@@ -7,7 +7,6 @@
 #include <std_srvs/srv/trigger.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 #include <sonia_common_cpp/SerialConn.hpp>
-#include <sonia_common_cpp/SharedQueue.hpp>
 
 #include <stdio.h>
 #include <string>
