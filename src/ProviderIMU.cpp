@@ -12,7 +12,7 @@ namespace provider_imu
         : Node("provider_imu"), _rs485Connection("/dev/IMU", B115200, true)
     {
         rclcpp::QoS qos(10);
-        qos.reliable();
+        qos.reliability(rclcpp::ReliabilityPolicy::BestEffort).durability(rclcpp::DurabilityPolicy::Volatile).history(rclcpp::HistoryPolicy::KeepLast);
 
         // Publisher
         publisher = this->create_publisher<sensor_msgs::msg::Imu>("provider_imu/imu_info", qos);
