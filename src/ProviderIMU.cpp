@@ -11,6 +11,7 @@ namespace provider_imu
     ProviderIMU::ProviderIMU()
         : Node("provider_imu"), _rs485Connection("/dev/IMU", B115200, true)
     {
+        //Setting Quality of service policy
         rclcpp::QoS qos(10);
         qos.reliability(rclcpp::ReliabilityPolicy::BestEffort).durability(rclcpp::DurabilityPolicy::Volatile).history(rclcpp::HistoryPolicy::KeepLast);
 
