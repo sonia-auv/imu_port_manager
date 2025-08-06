@@ -11,8 +11,12 @@ namespace provider_imu
     ProviderIMU::ProviderIMU()
         : Node("provider_imu"), _rs485Connection("/dev/IMU", B115200, true)
     {
+        //Setting Quality of service policy
+        rclcpp::QoS qos(10);
+        qos.reliability(rclcpp::ReliabilityPolicy::BestEffort);
+
         // Publisher
-        publisher = this->create_publisher<sensor_msgs::msg::Imu>("provider_imu/imu_info", 100);
+        publisher = this->create_publisher<sensor_msgs::msg::Imu>("provider_imu/imu_info", qos);
 
         // Subscribers
         dvl_subscriber = this->create_subscription<geometry_msgs::msg::Twist>("/proc_nav/dvl_velocity", 100, std::bind(&ProviderIMU::dvl_velocity, this, _1));

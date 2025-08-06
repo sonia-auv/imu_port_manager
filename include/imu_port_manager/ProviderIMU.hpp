@@ -12,7 +12,6 @@
 #include <string>
 #include <thread>
 #include "rclcpp/rclcpp.hpp"
-#include "SharedQueue.hpp"
 
 namespace provider_imu
 {
