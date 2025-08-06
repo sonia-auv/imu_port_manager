@@ -13,7 +13,7 @@ namespace provider_imu
     {
         //Setting Quality of service policy
         rclcpp::QoS qos(10);
-        qos.reliability(rclcpp::ReliabilityPolicy::BestEffort).durability(rclcpp::DurabilityPolicy::Volatile).history(rclcpp::HistoryPolicy::KeepLast);
+        qos.reliability(rclcpp::ReliabilityPolicy::BestEffort);
 
         // Publisher
         publisher = this->create_publisher<sensor_msgs::msg::Imu>("provider_imu/imu_info", qos);
