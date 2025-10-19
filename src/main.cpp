@@ -1,4 +1,4 @@
-#include "imu_port_manager/ProviderIMU.hpp"
+#include "imu_port_manager/ImuProvider.hpp"
 #include <stdlib.h>
 #include <iostream>
 #include <chrono>
@@ -6,7 +6,7 @@
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
-    auto imu= std::make_shared<provider_imu::ProviderIMU>();
+    auto imu= std::make_shared<imu_provider::ImuProvider>();
     
     if (!imu->OpenPort())
     {   
