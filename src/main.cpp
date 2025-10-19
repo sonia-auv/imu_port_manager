@@ -1,7 +1,4 @@
 #include "imu_port_manager/ImuProvider.hpp"
-#include <stdlib.h>
-#include <iostream>
-#include <chrono>
 
 int main(int argc, char *argv[])
 {

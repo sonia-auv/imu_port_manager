@@ -9,7 +9,6 @@
 #include <sonia_common_cpp/SerialConn.hpp>
 
 #include <stdio.h>
-#include <string>
 #include <thread>
 #include "rclcpp/rclcpp.hpp"
 
