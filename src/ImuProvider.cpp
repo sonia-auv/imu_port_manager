@@ -6,7 +6,7 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 using namespace std::chrono_literals;
 
-namespace imu_provider
+namespace imu_port_manager
 {
     ImuProvider::ImuProvider()
         : Node("imu_provider"), _rs485Connection("/dev/IMU", B115200, true)

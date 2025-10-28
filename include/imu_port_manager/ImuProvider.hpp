@@ -12,7 +12,7 @@
 #include <thread>
 #include "rclcpp/rclcpp.hpp"
 
-namespace imu_provider
+namespace imu_port_manager
 {
     struct Register
     {

@@ -3,7 +3,7 @@
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
-    auto imu= std::make_shared<imu_provider::ImuProvider>();
+    auto imu= std::make_shared<imu_port_manager::ImuProvider>();
     
     if (!imu->OpenPort())
     {   
