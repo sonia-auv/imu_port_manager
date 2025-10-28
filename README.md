@@ -1,6 +1,6 @@
 # imu_port_manager
 
-*description here*
+The project enables a serial connection with the Inertial Measurement Unit (IMU) sensor **VectorNav VN-100** for data transmission. The connection reads raw IMU data which includes linear acceleration, angular rate, magnetic field and orientation. The data is then transmitted using **ROS2** communication to other systems on the network.
 
 ---
 
@@ -19,10 +19,14 @@
 * `sensor_msgs`
 * `geometry_msgs`
 
-### Additional packages
+### Sonia packages
+
+* `sonia_common_cpp`
+
+### External packages
 
 * `Boost`
-* `sonia_common_cpp`
+
 ---
 
 ## Node
@@ -38,7 +42,7 @@
 
 | Type                             | Name                     | Direction       | Message/Service Type    | Description                                  |
 | -------------------------------- | ------------------------ | ----------------| ----------------------- | -------------------------------------------  |
-| Topic                            | `/provider_imu/imu_info` | Published       | `sensor_msgs/msg/IMU`   | Data from an IMU                             |
+| Topic                            | `/provider_imu/imu_info` | Published       | `sensor_msgs/msg/IMU`   | IMU standard data                            |
 | Service                          | `/provider_imu/tare`     | Service Server  | `std_srvs/srv/Trigger`  | Resets the imu sensor to current orientation |
 
 ---
@@ -74,7 +78,6 @@ ros2 param list /imu_port_manager
 
 ## References
 
-* [ROS 2 Humble Documentation](https://docs.ros.org/en/humble/)
 * [sonia_common_ros2](https://github.com/sonia-auv/sonia_common_ros2)
 * [VectorNav VN-100](https://www.vectornav.com/products/detail/vn-100)
 * [VectorNav VN-100 User Manual](https://www.navtechgps.com/wp-content/uploads/assets/1/7/VN100-T_UserManual-UM001.pdf)
