@@ -9,11 +9,10 @@
 #include <sonia_common_cpp/SerialConn.hpp>
 
 #include <stdio.h>
-#include <string>
 #include <thread>
 #include "rclcpp/rclcpp.hpp"
 
-namespace provider_imu
+namespace imu_port_manager
 {
     struct Register
     {
@@ -24,11 +23,11 @@ namespace provider_imu
         bool stop_thread;             
     };
 
-    class ProviderIMU:public rclcpp::Node
+    class ImuProvider:public rclcpp::Node
     {
         public:
-            ProviderIMU();
-            ~ProviderIMU();
+            ImuProvider();
+            ~ImuProvider();
             bool OpenPort();
         private:
             Register _reg_15; 

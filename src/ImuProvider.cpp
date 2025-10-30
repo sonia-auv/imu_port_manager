@@ -1,15 +1,15 @@
 #include <sstream>
 #include "boost/log/trivial.hpp"
-#include "imu_port_manager/ProviderIMU.hpp"
+#include "imu_port_manager/ImuProvider.hpp"
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 using namespace std::chrono_literals;
 
-namespace provider_imu
+namespace imu_port_manager
 {
-    ProviderIMU::ProviderIMU()
-        : Node("provider_imu"), _rs485Connection("/dev/IMU", B115200, true)
+    ImuProvider::ImuProvider()
+        : Node("imu_provider"), _rs485Connection("/dev/IMU", B115200, true)
     {
         //Setting Quality of service policy
         rclcpp::QoS qos(10);
@@ -19,29 +19,29 @@ namespace provider_imu
         publisher = this->create_publisher<sensor_msgs::msg::Imu>("provider_imu/imu_info", qos);
 
         // Subscribers
-        dvl_subscriber = this->create_subscription<geometry_msgs::msg::Twist>("/proc_nav/dvl_velocity", 100, std::bind(&ProviderIMU::dvl_velocity, this, _1));
-        vpe_basic_control = this->create_subscription<std_msgs::msg::UInt8MultiArray>("/provider_imu/vpe_basic_control", 10, std::bind(&ProviderIMU::vpe_basic_control_callback, this, _1));
-        magnetometer_calibration_control = this->create_subscription<std_msgs::msg::UInt8MultiArray>("/provider_imu/magnetometer_calibration_control", 10, std::bind(&ProviderIMU::magnetometer_calibration_control_callback, this, _1));
-        delta_theta_delta_velocity = this->create_subscription<std_msgs::msg::UInt8MultiArray>("/provider_imu/delta_theta_delta_velocity", 10, std::bind(&ProviderIMU::delta_theta_delta_velocity_callback, this, _1));
-        imu_filtering_configuration = this->create_subscription<std_msgs::msg::UInt8MultiArray>("/provider_imu/imu_filtering_configuration", 10, std::bind(&ProviderIMU::imu_filtering_configuration_callback, this, _1));
+        dvl_subscriber = this->create_subscription<geometry_msgs::msg::Twist>("/proc_nav/dvl_velocity", 100, std::bind(&ImuProvider::dvl_velocity, this, _1));
+        vpe_basic_control = this->create_subscription<std_msgs::msg::UInt8MultiArray>("/provider_imu/vpe_basic_control", 10, std::bind(&ImuProvider::vpe_basic_control_callback, this, _1));
+        magnetometer_calibration_control = this->create_subscription<std_msgs::msg::UInt8MultiArray>("/provider_imu/magnetometer_calibration_control", 10, std::bind(&ImuProvider::magnetometer_calibration_control_callback, this, _1));
+        delta_theta_delta_velocity = this->create_subscription<std_msgs::msg::UInt8MultiArray>("/provider_imu/delta_theta_delta_velocity", 10, std::bind(&ImuProvider::delta_theta_delta_velocity_callback, this, _1));
+        imu_filtering_configuration = this->create_subscription<std_msgs::msg::UInt8MultiArray>("/provider_imu/imu_filtering_configuration", 10, std::bind(&ImuProvider::imu_filtering_configuration_callback, this, _1));
 
         // Services
-        tare_srv = this->create_service<std_srvs::srv::Trigger>("/provider_imu/tare", std::bind(&ProviderIMU::tare, this, _1, _2));
-        reset_srv = this->create_service<std_srvs::srv::Trigger>("/provider_imu/reset", std::bind(&ProviderIMU::reset, this, _1, _2));
-        factory_reset_srv = this->create_service<std_srvs::srv::Trigger>("/provider_imu/factory_reset", std::bind(&ProviderIMU::factory_reset, this, _1, _2));
-        magnetic_disturbance_srv = this->create_service<std_srvs::srv::SetBool>("/provider_imu/magnetic_disturbance", std::bind(&ProviderIMU::magnetic_disturbance, this, _1, _2));
-        acceleration_disturbance_srv = this->create_service<std_srvs::srv::SetBool>("/provider_imu/acceleration_disturbance", std::bind(&ProviderIMU::acceleration_disturbance, this, _1, _2));
-        velocity_compensation_srv = this->create_service<std_srvs::srv::SetBool>("/provider_imu/velocity_compensation", std::bind(&ProviderIMU::velocity_compensation, this, _1, _2));
-        asyn_output_pause_srv  = this->create_service<std_srvs::srv::SetBool>("/provider_imu/pause", std::bind(&ProviderIMU::asyn_output_pause , this, _1, _2));
+        tare_srv = this->create_service<std_srvs::srv::Trigger>("/provider_imu/tare", std::bind(&ImuProvider::tare, this, _1, _2));
+        reset_srv = this->create_service<std_srvs::srv::Trigger>("/provider_imu/reset", std::bind(&ImuProvider::reset, this, _1, _2));
+        factory_reset_srv = this->create_service<std_srvs::srv::Trigger>("/provider_imu/factory_reset", std::bind(&ImuProvider::factory_reset, this, _1, _2));
+        magnetic_disturbance_srv = this->create_service<std_srvs::srv::SetBool>("/provider_imu/magnetic_disturbance", std::bind(&ImuProvider::magnetic_disturbance, this, _1, _2));
+        acceleration_disturbance_srv = this->create_service<std_srvs::srv::SetBool>("/provider_imu/acceleration_disturbance", std::bind(&ImuProvider::acceleration_disturbance, this, _1, _2));
+        velocity_compensation_srv = this->create_service<std_srvs::srv::SetBool>("/provider_imu/velocity_compensation", std::bind(&ImuProvider::velocity_compensation, this, _1, _2));
+        asyn_output_pause_srv  = this->create_service<std_srvs::srv::SetBool>("/provider_imu/pause", std::bind(&ImuProvider::asyn_output_pause , this, _1, _2));
 
-        _reg_15.thread = std::thread(std::bind(&ProviderIMU::send_register_15, this));
-        _reg_239.thread = std::thread(std::bind(&ProviderIMU::send_register_239, this));
-        _reg_240.thread = std::thread(std::bind(&ProviderIMU::send_register_240, this));
-        read_thread = std::thread(std::bind(&ProviderIMU::reader, this));
-        _err.thread = std::thread(std::bind(&ProviderIMU::send_err, this));
+        _reg_15.thread = std::thread(std::bind(&ImuProvider::send_register_15, this));
+        _reg_239.thread = std::thread(std::bind(&ImuProvider::send_register_239, this));
+        _reg_240.thread = std::thread(std::bind(&ImuProvider::send_register_240, this));
+        read_thread = std::thread(std::bind(&ImuProvider::reader, this));
+        _err.thread = std::thread(std::bind(&ImuProvider::send_err, this));
     }
 
-    ProviderIMU::~ProviderIMU()
+    ImuProvider::~ImuProvider()
     {
         _reg_15.stop_thread = true;
         _reg_239.stop_thread = true;
@@ -50,7 +50,7 @@ namespace provider_imu
         _reader_stop_thread = true;
     }
 
-    bool ProviderIMU::OpenPort()
+    bool ImuProvider::OpenPort()
     {
         bool res = _rs485Connection.OpenPort();
         if (res)
@@ -60,7 +60,7 @@ namespace provider_imu
         return res;
     }
 
-    uint8_t ProviderIMU::calculeCheckSum(const std::string data)
+    uint8_t ImuProvider::calculeCheckSum(const std::string data)
     {
         uint8_t check = 0;
 
@@ -70,7 +70,7 @@ namespace provider_imu
         return check;
     }
     
-    void ProviderIMU::appendCheckSum(std::string &data)
+    void ImuProvider::appendCheckSum(std::string &data)
     {
         std::stringstream ss;
         uint8_t checksum = calculeCheckSum(data);
@@ -78,7 +78,7 @@ namespace provider_imu
         data = ss.str();
     }
 
-    bool ProviderIMU::confirmCheckSum(std::string &data)
+    bool ImuProvider::confirmCheckSum(std::string &data)
     {
         try
         {
@@ -94,7 +94,7 @@ namespace provider_imu
         }
     }
 
-    void ProviderIMU::tare(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response)
+    void ImuProvider::tare(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response)
     {
         _rs485Connection.Transmit("$VNTAR*5F\n");
         std::this_thread::sleep_for(0.1s);
@@ -102,7 +102,7 @@ namespace provider_imu
         response->message = "IMU Sensor tared";
     }
 
-    void ProviderIMU::reset(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response)
+    void ImuProvider::reset(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response)
     {
         _rs485Connection.Transmit("$VNRST*4D\n");
         std::this_thread::sleep_for(0.1s);
@@ -110,7 +110,7 @@ namespace provider_imu
         response->message = "IMU Sensor reset";
     }
 
-    void ProviderIMU::factory_reset(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response)
+    void ImuProvider::factory_reset(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response)
     {
         _rs485Connection.Transmit("$VNRFS*5F\n");
         std::this_thread::sleep_for(0.1s);
@@ -118,7 +118,7 @@ namespace provider_imu
         response->message = "IMU Sensor factory_reset";
     }
 
-    void ProviderIMU::magnetic_disturbance(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+    void ImuProvider::magnetic_disturbance(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response)
     {
         std::stringstream ss;
 
@@ -134,7 +134,7 @@ namespace provider_imu
         response->success = true;
     }
 
-    void ProviderIMU::acceleration_disturbance(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+    void ImuProvider::acceleration_disturbance(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response)
     {
         std::stringstream ss;
 
@@ -150,7 +150,7 @@ namespace provider_imu
         response->success = true;
     }
 
-    void ProviderIMU::velocity_compensation(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+    void ImuProvider::velocity_compensation(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response)
     {
         std::stringstream ss;
 
@@ -166,7 +166,7 @@ namespace provider_imu
         response->success = true;
     }
 
-    void ProviderIMU::asyn_output_pause(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+    void ImuProvider::asyn_output_pause(const std::shared_ptr<std_srvs::srv::SetBool::Request> request, std::shared_ptr<std_srvs::srv::SetBool::Response> response)
     {
         std::stringstream ss;
 
@@ -182,7 +182,7 @@ namespace provider_imu
         response->success = true;
     }
 
-    void ProviderIMU::dvl_velocity(const std::shared_ptr<geometry_msgs::msg::Twist> msg)
+    void ImuProvider::dvl_velocity(const std::shared_ptr<geometry_msgs::msg::Twist> msg)
     {
         std::stringstream ss;
 
@@ -194,7 +194,7 @@ namespace provider_imu
         _rs485Connection.Transmit(send_data);
     }
 
-    /*void ProviderIMU::asyn_Data_frequency_callback(const std_msgs::msg::UInt8::SharedPtr &msg)
+    /*void ImuProvider::asyn_Data_frequency_callback(const std_msgs::msg::UInt8::SharedPtr &msg)
     {
         std::stringstream ss;
 
@@ -210,7 +210,7 @@ namespace provider_imu
         _writerMutex.unlock();
     }*/
 
-    void ProviderIMU::vpe_basic_control_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg)
+    void ImuProvider::vpe_basic_control_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg)
     {
         std::stringstream ss;
 
@@ -227,7 +227,7 @@ namespace provider_imu
         _writerMutex.unlock();
     }
 
-    void ProviderIMU::magnetometer_calibration_control_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg)
+    void ImuProvider::magnetometer_calibration_control_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg)
     {
         std::stringstream ss;
 
@@ -244,7 +244,7 @@ namespace provider_imu
         _writerMutex.unlock();
     }
 
-    void ProviderIMU::delta_theta_delta_velocity_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg)
+    void ImuProvider::delta_theta_delta_velocity_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg)
     {
         std::stringstream ss;
 
@@ -261,7 +261,7 @@ namespace provider_imu
         _writerMutex.unlock();
     }
 
-    void ProviderIMU::imu_filtering_configuration_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg)
+    void ImuProvider::imu_filtering_configuration_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg)
     {
         std::stringstream ss;
 
@@ -279,7 +279,7 @@ namespace provider_imu
         _writerMutex.unlock();
     }
 
-    void ProviderIMU::reader()
+    void ImuProvider::reader()
     {
 	// Delay for port opening
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -338,7 +338,7 @@ namespace provider_imu
         } // end while
     }     // end reader
 
-    void ProviderIMU::send_err()
+    void ImuProvider::send_err()
     {
         while (!_err.stop_thread)
         {
@@ -370,7 +370,7 @@ namespace provider_imu
         }
     }
     
-    void ProviderIMU::send_register_15()
+    void ImuProvider::send_register_15()
     {
         while (!_reg_15.stop_thread)
         {
@@ -436,7 +436,7 @@ namespace provider_imu
         }
     }
 
-    void ProviderIMU::send_register_239()
+    void ImuProvider::send_register_239()
     {
         while (!_reg_239.stop_thread)
         {
@@ -490,7 +490,7 @@ namespace provider_imu
         }
     }
 
-    void ProviderIMU::send_register_240()
+    void ImuProvider::send_register_240()
     {
         while (!_reg_240.stop_thread)
         {
