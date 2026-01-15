@@ -17,6 +17,10 @@ namespace imu_port_manager
 
         // Publisher
         publisher = this->create_publisher<sensor_msgs::msg::Imu>("provider_imu/imu_info", qos);
+        publisher_node_status = this->create_publisher<sonia_common_ros2::msg::NodeStatus>("/system_monitor/node_status", 1);
+
+        //wall timer
+        timerNodeStatus = this->create_wall_timer(500ms, std::bind(&ImuProvider::publishStatus, this));
 
         // Subscribers
         dvl_subscriber = this->create_subscription<geometry_msgs::msg::Twist>("/proc_nav/dvl_velocity", 100, std::bind(&ImuProvider::dvl_velocity, this, _1));
@@ -92,6 +96,12 @@ namespace imu_port_manager
             BOOST_LOG_TRIVIAL(info)<<"IMU : Bad packet checksum";
             return false;
         }
+    }
+
+    void ImuProvider::publishStatus(){
+        _node_status.node_name = this->get_name();
+        _node_status.stamp = this->now();
+        publisher_node_status->publish(_node_status);
     }
 
     void ImuProvider::tare(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response)

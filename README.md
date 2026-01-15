@@ -22,6 +22,7 @@ The project enables a serial connection with the Inertial Measurement Unit (IMU)
 ### Sonia packages
 
 * `sonia_common_cpp`
+* `sonia_common_ros2`
 
 ### External packages
 
@@ -40,10 +41,11 @@ The project enables a serial connection with the Inertial Measurement Unit (IMU)
 
 ## Registered Topics / Services / Actions
 
-| Type                             | Name                     | Direction       | Message/Service Type    | Description                                  |
-| -------------------------------- | ------------------------ | ----------------| ----------------------- | -------------------------------------------  |
-| Topic                            | `/provider_imu/imu_info` | Published       | `sensor_msgs/msg/IMU`   | IMU standard data                            |
-| Service                          | `/provider_imu/tare`     | Service Server  | `std_srvs/srv/Trigger`  | Resets the imu sensor to current orientation |
+| Type            | Name                           | Direction       | Message/Service Type                | Description                                               |
+| --------------- | ------------------------------ | ----------------| ----------------------------------- | --------------------------------------------------------  |
+| Topic           | `/provider_imu/imu_info`       | Published       | `sensor_msgs/msg/IMU`               | IMU standard data                                         |
+| Topic           | `/system_monitor/node_status`  | Published       | `sonia_common_ros2/msg/NodeStatus`  | Message contains information of the state of a node       |
+| Service         | `/provider_imu/tare`           | Service Server  | `std_srvs/srv/Trigger`              | Resets the imu sensor to current orientation              |
 
 ---
 ## Build Instructions

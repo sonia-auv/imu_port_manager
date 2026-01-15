@@ -7,6 +7,7 @@
 #include <std_srvs/srv/trigger.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 #include <sonia_common_cpp/SerialConn.hpp>
+#include <sonia_common_ros2/msg/node_status.hpp>
 
 #include <stdio.h>
 #include <thread>
@@ -43,7 +44,7 @@ namespace imu_port_manager
             uint8_t calculeCheckSum(std::string data);
             void appendCheckSum(std::string& data);
             bool confirmCheckSum(std::string& data);
-            
+            void publishStatus();            
 
             void tare(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response);
             void reset(const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response);
@@ -73,8 +74,12 @@ namespace imu_port_manager
             const char* ERR_STR = "ERR";
 
             sonia_common_cpp::SerialConn _rs485Connection;
+            sonia_common_ros2::msg::NodeStatus _node_status;
 
             rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr publisher;
+            rclcpp::Publisher<sonia_common_ros2::msg::NodeStatus>::SharedPtr publisher_node_status;
+
+            rclcpp::TimerBase::SharedPtr timerNodeStatus;
 
             rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr dvl_subscriber;
             rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr vpe_basic_control;
