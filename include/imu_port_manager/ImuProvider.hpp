@@ -56,6 +56,7 @@ namespace imu_port_manager
 
             void dvl_velocity(const std::shared_ptr<geometry_msgs::msg::Twist>  msg);
             //void asyn_Data_frequency_callback(const std_msgs::msg::UInt8::SharedPtr& msg);
+            void asyn_Data_callback(const std::shared_ptr<std_msgs::msg::UInt8::SharedPtr> msg);
             void vpe_basic_control_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg);
             void magnetometer_calibration_control_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg);
             void delta_theta_delta_velocity_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg);
@@ -86,6 +87,7 @@ namespace imu_port_manager
             rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr magnetometer_calibration_control;
             rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr delta_theta_delta_velocity;
             rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr imu_filtering_configuration;
+            rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr imu_async_data;
 
             rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr tare_srv;
             rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reset_srv;

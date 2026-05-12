@@ -32,6 +32,7 @@ namespace imu_port_manager
         magnetometer_calibration_control = this->create_subscription<std_msgs::msg::UInt8MultiArray>("/provider_imu/magnetometer_calibration_control", 10, std::bind(&ImuProvider::magnetometer_calibration_control_callback, this, _1));
         delta_theta_delta_velocity = this->create_subscription<std_msgs::msg::UInt8MultiArray>("/provider_imu/delta_theta_delta_velocity", 10, std::bind(&ImuProvider::delta_theta_delta_velocity_callback, this, _1));
         imu_filtering_configuration = this->create_subscription<std_msgs::msg::UInt8MultiArray>("/provider_imu/imu_filtering_configuration", 10, std::bind(&ImuProvider::imu_filtering_configuration_callback, this, _1));
+        imu_async_data = this->create_subscription<std_msgs::msg::UInt8>("/provider_imu/imu_async_data", 10, std::bind(&ImuProvider::asyn_Data_callback, this, _1));
 
         // Services
         tare_srv = this->create_service<std_srvs::srv::Trigger>("/provider_imu/tare", std::bind(&ImuProvider::tare, this, _1, _2));
@@ -223,6 +224,22 @@ namespace imu_port_manager
 
         _writerMutex.unlock();
     }*/
+
+    void ImuProvider::asyn_Data_callback(const std_msgs::msg::UInt8::SharedPtr &msg)
+    {
+        std::stringstream ss;
+
+        _writerMutex.lock();
+
+        ss << "$VNWNV,06," << std::to_string(msg->data);
+        std::string send_data = ss.str();
+        appendCheckSum(send_data);
+
+        _rs485Connection.Transmit(send_data);
+        std::this_thread::sleep_for(0.5s);
+
+        _writerMutex.unlock();
+    }
 
     void ImuProvider::vpe_basic_control_callback(const std::shared_ptr<std_msgs::msg::UInt8MultiArray> msg)
     {
@@ -521,7 +538,7 @@ namespace imu_port_manager
             {
                 if ((!_reg_240.str.empty()) && confirmCheckSum(_reg_240.str))
                 {
-                    std::stringstream ss(_reg_15.str);
+                    std::stringstream ss(_reg_240.str);
 
                     std::getline(ss, parameter, ',');
 
